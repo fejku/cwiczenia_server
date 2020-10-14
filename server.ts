@@ -1,13 +1,9 @@
-import dotenv from 'dotenv';
-import App from './app';
-import WagaController from './controllers/waga.controller';
+import dotenv from "dotenv";
+import App from "./app";
+import WagaController from "./controllers/waga.controller";
 
-dotenv.config({ path: './env/development.env' });
+dotenv.config({ path: "./env/development.env" });
 
-const app = new App(
-  [
-    new WagaController(),
-  ],
-);
- 
+const app = new App([new WagaController()]);
+
 app.listen();
