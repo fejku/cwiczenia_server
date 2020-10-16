@@ -1,5 +1,6 @@
 import express from "express";
 import Controller from "../../interfaces/controller.interface";
+import ITag from "../../interfaces/food/ITag";
 import TagModel from "../../models/food/TagModel";
 
 class TagiController implements Controller {
@@ -13,10 +14,9 @@ class TagiController implements Controller {
 
   private initializeRoutes() {
     this.router.get(this.path, this.getAllTagi);
-    // this.router.get(`${this.path}/:id`, this.getWagaById);
-    // this.router.patch(`${this.path}/:id`, this.modifyWaga);
-    // this.router.delete(`${this.path}/:id`, this.deleteWaga);
-    // this.router.post(this.path, this.createWaga);
+    this.router.get(`${this.path}/:id`, this.getTagById);
+    this.router.delete(`${this.path}/:id`, this.deleteTag);
+    this.router.post(this.path, this.createTag);
   }
 
   private getAllTagi = async (request: express.Request, response: express.Response) => {
@@ -28,69 +28,38 @@ class TagiController implements Controller {
     }
   };
 
-  // private getWagaById = (request: express.Request, response: express.Response) => {
-  //   const { id } = request.params;
-  //   WagaModel.findById(id).then((waga) => {
-  //     response.send(waga);
-  //   });
-  // };
+  private getTagById = (request: express.Request, response: express.Response) => {
+    const { id } = request.params;
+    TagModel.findById(id).then((tag) => {
+      response.send(tag);
+    });
+  };
 
-  // private modifyWaga = (request: express.Request, response: express.Response) => {
-  //   const { id } = request.params;
-  //   const wagaData: Waga = request.body;
-  //   WagaModel.findByIdAndUpdate(id, wagaData, { new: true }).then((waga) => {
-  //     response.send(waga);
-  //   });
-  // };
+  private createTag = async (request: express.Request, response: express.Response) => {
+    const tagData: ITag = request.body;
 
-  // private createWaga = async (request: express.Request, response: express.Response) => {
-  //   const wagaData: Waga = request.body;
+    const createdTag = new TagModel(tagData);
+    try {
+      await createdTag.save();
+    } catch (error) {
+      console.log(error);
+    }
 
-  //   let czyAktualizacja = false;
-  //   if (wagaData.wagaRano || wagaData.wagaWieczor) {
-  //     const foundWaga = await WagaModel.findOne({
-  //       data: {
-  //         $gte: moment(wagaData.data).startOf("day").toDate(),
-  //         $lte: moment(wagaData.data).endOf("day").toDate(),
-  //       },
-  //     });
+    const tagi = await TagModel.find();
+    response.send(tagi);
+  };
 
-  //     if (foundWaga) {
-  //       if (wagaData.wagaRano) {
-  //         foundWaga.wagaRano = wagaData.wagaRano;
-  //       }
-  //       if (wagaData.wagaWieczor) {
-  //         foundWaga.wagaWieczor = wagaData.wagaWieczor;
-  //       }
-  //       await foundWaga.save();
-  //       czyAktualizacja = true;
-  //     }
-  //   }
+  private deleteTag = async (request: express.Request, response: express.Response) => {
+    const { id } = request.params;
+    try {
+      await TagModel.findByIdAndDelete(id);
 
-  //   if (!czyAktualizacja) {
-  //     const createdWaga = new WagaModel(wagaData);
-  //     try {
-  //       await createdWaga.save();
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   }
-
-  //   const wagi = await WagaModel.find();
-  //   response.send(wagi);
-  // };
-
-  // private deleteWaga = async (request: express.Request, response: express.Response) => {
-  //   const { id } = request.params;
-  //   try {
-  //     await WagaModel.findByIdAndDelete(id);
-
-  //     const wagi = await WagaModel.find();
-  //     response.send(wagi);
-  //   } catch (error) {
-  //     response.sendStatus(404);
-  //   }
-  // };
+      const tagi = await TagModel.find();
+      response.send(tagi);
+    } catch (error) {
+      response.sendStatus(404);
+    }
+  };
 }
 
 export default TagiController;

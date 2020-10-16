@@ -1,5 +1,6 @@
 import express from "express";
 import Controller from "../../interfaces/controller.interface";
+import IPotrawa from "../../interfaces/food/IPotrawa";
 import PotrawaModel from "../../models/food/PotrawaModel";
 import TagModel from "../../models/food/TagModel";
 
@@ -14,29 +15,27 @@ class PotrawyController implements Controller {
 
   private initializeRoutes() {
     this.router.get(this.path, this.getAllPotrawy);
-    // this.router.get(`${this.path}/:id`, this.getWagaById);
+    this.router.get(`${this.path}/:id`, this.getPotrawaById);
     // this.router.patch(`${this.path}/:id`, this.modifyWaga);
-    // this.router.delete(`${this.path}/:id`, this.deleteWaga);
-    // this.router.post(this.path, this.createWaga);
+    this.router.delete(`${this.path}/:id`, this.deletePotrawa);
+    this.router.post(this.path, this.createPotrawa);
   }
 
   private getAllPotrawy = async (request: express.Request, response: express.Response) => {
     try {
       const potrawy = await PotrawaModel.find().populate({ path: "tagi", Model: TagModel });
-      console.log(potrawy);
-
       response.send(potrawy);
     } catch (error) {
       console.log(error);
     }
   };
 
-  // private getWagaById = (request: express.Request, response: express.Response) => {
-  //   const { id } = request.params;
-  //   WagaModel.findById(id).then((waga) => {
-  //     response.send(waga);
-  //   });
-  // };
+  private getPotrawaById = (request: express.Request, response: express.Response) => {
+    const { id } = request.params;
+    PotrawaModel.findById(id).then((potrawa) => {
+      response.send(potrawa);
+    });
+  };
 
   // private modifyWaga = (request: express.Request, response: express.Response) => {
   //   const { id } = request.params;
@@ -46,54 +45,31 @@ class PotrawyController implements Controller {
   //   });
   // };
 
-  // private createWaga = async (request: express.Request, response: express.Response) => {
-  //   const wagaData: Waga = request.body;
+  private createPotrawa = async (request: express.Request, response: express.Response) => {
+    const potrawaData: IPotrawa = request.body;
 
-  //   let czyAktualizacja = false;
-  //   if (wagaData.wagaRano || wagaData.wagaWieczor) {
-  //     const foundWaga = await WagaModel.findOne({
-  //       data: {
-  //         $gte: moment(wagaData.data).startOf("day").toDate(),
-  //         $lte: moment(wagaData.data).endOf("day").toDate(),
-  //       },
-  //     });
+    const createdPotrawa = new PotrawaModel(potrawaData);
+    try {
+      await createdPotrawa.save();
+    } catch (error) {
+      console.log(error);
+    }
 
-  //     if (foundWaga) {
-  //       if (wagaData.wagaRano) {
-  //         foundWaga.wagaRano = wagaData.wagaRano;
-  //       }
-  //       if (wagaData.wagaWieczor) {
-  //         foundWaga.wagaWieczor = wagaData.wagaWieczor;
-  //       }
-  //       await foundWaga.save();
-  //       czyAktualizacja = true;
-  //     }
-  //   }
+    const potrawy = await PotrawaModel.find().populate({ path: "tagi", Model: TagModel });
+    response.send(potrawy);
+  };
 
-  //   if (!czyAktualizacja) {
-  //     const createdWaga = new WagaModel(wagaData);
-  //     try {
-  //       await createdWaga.save();
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   }
+  private deletePotrawa = async (request: express.Request, response: express.Response) => {
+    const { id } = request.params;
+    try {
+      await PotrawaModel.findByIdAndDelete(id);
 
-  //   const wagi = await WagaModel.find();
-  //   response.send(wagi);
-  // };
-
-  // private deleteWaga = async (request: express.Request, response: express.Response) => {
-  //   const { id } = request.params;
-  //   try {
-  //     await WagaModel.findByIdAndDelete(id);
-
-  //     const wagi = await WagaModel.find();
-  //     response.send(wagi);
-  //   } catch (error) {
-  //     response.sendStatus(404);
-  //   }
-  // };
+      const potrawy = await PotrawaModel.find().populate({ path: "tagi", Model: TagModel });
+      response.send(potrawy);
+    } catch (error) {
+      response.sendStatus(404);
+    }
+  };
 }
 
 export default PotrawyController;
