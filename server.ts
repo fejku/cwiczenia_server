@@ -1,9 +1,11 @@
 import dotenv from "dotenv";
-import App from "./app";
+import PotrawyController from "./controllers/food/PotrawyController";
 import WagaController from "./controllers/waga.controller";
+import TagiController from "./controllers/food/TagiController";
+import App from "./app";
 
 dotenv.config({ path: "./env/development.env" });
 
-const app = new App([new WagaController()]);
+const app = new App([new WagaController(), new PotrawyController(), new TagiController()]);
 
 app.listen();
