@@ -1,10 +1,9 @@
 import mongoose, { Document } from "mongoose";
-import Waga from "../interfaces/waga.interface";
+import Waga from "../interfaces/IWaga";
 
 const WagaSchema = new mongoose.Schema({
   data: Date,
-  wagaRano: Number,
-  wagaWieczor: Number,
+  waga: Number,
 });
 
 const WagaModel = mongoose.model<Waga & Document>("Waga", WagaSchema, "wagi");

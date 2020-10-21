@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import PotrawyController from "./controllers/food/PotrawyController";
-import WagaController from "./controllers/waga.controller";
+import WagaController from "./controllers/WagaController";
 import TagiController from "./controllers/food/TagiController";
 import App from "./app";
 

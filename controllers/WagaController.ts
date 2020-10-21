@@ -1,8 +1,8 @@
 import express from "express";
 import moment from "moment";
 import Controller from "../interfaces/controller.interface";
-import Waga from "../interfaces/waga.interface";
-import WagaModel from "../models/waga.model";
+import Waga from "../interfaces/IWaga";
+import WagaModel from "../models/WagaModel";
 
 class WagaController implements Controller {
   public path = "/waga";
@@ -39,8 +39,8 @@ class WagaController implements Controller {
 
   private modifyWaga = (request: express.Request, response: express.Response) => {
     const { id } = request.params;
-    const wagaData: Waga = request.body;
-    WagaModel.findByIdAndUpdate(id, wagaData, { new: true }).then((waga) => {
+    const zmodyfikowanaWaga: Waga = request.body;
+    WagaModel.findByIdAndUpdate(id, zmodyfikowanaWaga, { new: true }).then((waga) => {
       response.send(waga);
     });
   };
@@ -48,49 +48,27 @@ class WagaController implements Controller {
   private createWaga = async (request: express.Request, response: express.Response) => {
     const wagaData: Waga = request.body;
 
-    let czyAktualizacja = false;
-    if (wagaData.wagaRano || wagaData.wagaWieczor) {
-      const foundWaga = await WagaModel.findOne({
-        data: {
-          $gte: moment(wagaData.data).startOf("day").toDate(),
-          $lte: moment(wagaData.data).endOf("day").toDate(),
-        },
-      });
-
-      if (foundWaga) {
-        if (wagaData.wagaRano) {
-          foundWaga.wagaRano = wagaData.wagaRano;
-        }
-        if (wagaData.wagaWieczor) {
-          foundWaga.wagaWieczor = wagaData.wagaWieczor;
-        }
-        await foundWaga.save();
-        czyAktualizacja = true;
-      }
+    const createdWaga = new WagaModel(wagaData);
+    try {
+      const savedWaga = await createdWaga.save();
+      response.send(savedWaga);
+    } catch (error) {
+      console.log(error);
     }
-
-    if (!czyAktualizacja) {
-      const createdWaga = new WagaModel(wagaData);
-      try {
-        await createdWaga.save();
-      } catch (error) {
-        console.log(error);
-      }
-    }
-
-    const wagi = await WagaModel.find();
-    response.send(wagi);
   };
 
   private deleteWaga = async (request: express.Request, response: express.Response) => {
     const { id } = request.params;
     try {
-      await WagaModel.findByIdAndDelete(id);
+      const successResponse = await WagaModel.findByIdAndDelete(id);
 
-      const wagi = await WagaModel.find();
-      response.send(wagi);
+      if (successResponse) {
+        response.sendStatus(200);
+      } else {
+        response.sendStatus(500);
+      }
     } catch (error) {
-      response.sendStatus(404);
+      response.sendStatus(500);
     }
   };
 }
